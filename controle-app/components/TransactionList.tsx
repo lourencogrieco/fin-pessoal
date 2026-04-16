@@ -101,14 +101,18 @@ export function TransactionList({ movimentacoes, membros, onRemover }: Props) {
                     </td>
                     <td className="px-4 py-3.5 text-gray-400 text-xs whitespace-nowrap">{formatarData(m.data)}</td>
                     <td className="px-4 py-3.5">
-                      {membro && (
+                      {m.membroId === 'conjunto' ? (
+                        <span className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600">
+                          Conjunto
+                        </span>
+                      ) : membro ? (
                         <span
                           className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full text-white"
                           style={{ backgroundColor: membro.cor }}
                         >
                           {membro.nome}
                         </span>
-                      )}
+                      ) : null}
                     </td>
                     <td className="px-4 py-3.5">
                       <button

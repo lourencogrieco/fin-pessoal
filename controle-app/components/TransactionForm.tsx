@@ -160,6 +160,9 @@ export function TransactionForm({ scope, membros, onSubmit }: Props) {
             required={scope === 'familia'}
           >
             <option value="">{scope === 'familia' ? 'Quem pagou *' : 'Membro (opcional)'}</option>
+            {scope === 'familia' && (
+              <option value="conjunto">Conjunto (já dividido)</option>
+            )}
             {membros.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
           </select>
         )}

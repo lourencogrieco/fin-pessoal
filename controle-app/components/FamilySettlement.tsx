@@ -32,7 +32,15 @@ function calcularRateio(movimentacoes: Movimentacao[], membros: MembroFamiliar[]
   const pagamentos: Record<string, number> = {}
   membros.forEach(m => { pagamentos[m.id] = 0 })
   despesas.forEach(m => {
-    if (m.membroId) pagamentos[m.membroId] = (pagamentos[m.membroId] ?? 0) + m.valor
+    if (m.membroId === 'conjunto') {
+      // despesa já paga em conjunto: distribuir igualmente para cada membro
+      const valorPorMembro = membros.length > 0 ? m.valor / membros.length : 0
+      membros.forEach(mb => {
+        pagamentos[mb.id] = (pagamentos[mb.id] ?? 0) + valorPorMembro
+      })
+    } else if (m.membroId) {
+      pagamentos[m.membroId] = (pagamentos[m.membroId] ?? 0) + m.valor
+    }
   })
 
   const saldos: MembroSaldo[] = membros.map(m => ({
