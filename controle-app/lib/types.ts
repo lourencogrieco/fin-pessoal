@@ -25,6 +25,9 @@ export interface Movimentacao {
   data: string
   membroId?: string
   scope: TipoScope
+  parcelaGrupoId?: string
+  parcelaAtual?: number
+  totalParcelas?: number
 }
 
 export interface MembroFamiliar {

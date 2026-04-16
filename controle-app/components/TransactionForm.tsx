@@ -14,7 +14,7 @@ const PAGAMENTOS: FormaPagamento[] = ['Cartão', 'Pix', 'Dinheiro', 'Boleto', 'T
 interface Props {
   scope: TipoScope
   membros: MembroFamiliar[]
-  onSubmit: (dados: Omit<Movimentacao, 'id'>) => void
+  onSubmit: (dados: Omit<Movimentacao, 'id'>, parcelas: number) => void
 }
 
 const hoje = new Date().toISOString().split('T')[0]
@@ -28,6 +28,7 @@ export function TransactionForm({ scope, membros, onSubmit }: Props) {
     pagamento: '' as FormaPagamento | '',
     membroId: '',
     data: hoje,
+    parcelas: '1',
   })
 
   const set = (field: string, value: string) =>
@@ -37,24 +38,35 @@ export function TransactionForm({ scope, membros, onSubmit }: Props) {
     e.preventDefault()
     if (!form.tipo || !form.categoria || !form.pagamento) return
 
-    onSubmit({
-      descricao: form.descricao,
-      valor: parseFloat(form.valor),
-      tipo: form.tipo,
-      categoria: form.categoria,
-      pagamento: form.pagamento,
-      data: form.data,
-      membroId: form.membroId || undefined,
-      scope,
-    })
+    const parcelas = parseInt(form.parcelas) || 1
 
-    setForm({ descricao: '', valor: '', tipo: '', categoria: '', pagamento: '', membroId: '', data: hoje })
+    onSubmit(
+      {
+        descricao: form.descricao,
+        valor: parseFloat(form.valor),
+        tipo: form.tipo,
+        categoria: form.categoria,
+        pagamento: form.pagamento,
+        data: form.data,
+        membroId: form.membroId || undefined,
+        scope,
+      },
+      parcelas,
+    )
+
+    setForm({ descricao: '', valor: '', tipo: '', categoria: '', pagamento: '', membroId: '', data: hoje, parcelas: '1' })
   }
 
   const accent = scope === 'pessoal' ? 'focus:border-blue-500' : 'focus:border-purple-500'
   const btnColor = scope === 'pessoal'
     ? 'bg-blue-600 hover:bg-blue-700'
     : 'bg-purple-600 hover:bg-purple-700'
+
+  const isDespesa = form.tipo === 'despesa'
+  const parcelasNum = parseInt(form.parcelas) || 1
+  const valorParcela = isDespesa && parcelasNum > 1 && form.valor
+    ? Math.round((parseFloat(form.valor) / parcelasNum) * 100) / 100
+    : null
 
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-5">
@@ -74,7 +86,7 @@ export function TransactionForm({ scope, membros, onSubmit }: Props) {
           step="0.01"
           min="0.01"
           className={`border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none transition-colors ${accent}`}
-          placeholder="Valor (R$)"
+          placeholder="Valor total (R$)"
           value={form.valor}
           onChange={e => set('valor', e.target.value)}
           required
@@ -87,8 +99,8 @@ export function TransactionForm({ scope, membros, onSubmit }: Props) {
           required
         >
           <option value="">Tipo</option>
-          <option value="receita">Receita</option>
           <option value="despesa">Despesa</option>
+          <option value="receita">Receita</option>
         </select>
 
         <select
@@ -118,6 +130,27 @@ export function TransactionForm({ scope, membros, onSubmit }: Props) {
           onChange={e => set('data', e.target.value)}
           required
         />
+
+        {/* Parcelas — só para despesas */}
+        {isDespesa && (
+          <div className="relative">
+            <select
+              className={`w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none transition-colors bg-white ${accent}`}
+              value={form.parcelas}
+              onChange={e => set('parcelas', e.target.value)}
+            >
+              <option value="1">À vista</option>
+              {[2,3,4,5,6,7,8,9,10,11,12,18,24,36,48,60].map(n => (
+                <option key={n} value={n}>{n}x</option>
+              ))}
+            </select>
+            {valorParcela !== null && (
+              <p className="absolute -bottom-4 left-1 text-[10px] text-gray-400">
+                {parcelasNum}x de R$ {valorParcela.toFixed(2).replace('.', ',')}
+              </p>
+            )}
+          </div>
+        )}
 
         {membros.length > 0 && (
           <select

@@ -63,7 +63,16 @@ export function TransactionList({ movimentacoes, membros, onRemover }: Props) {
                 const categoriaCor = CATEGORIA_CORES[m.categoria] ?? '#9ca3af'
                 return (
                   <tr key={m.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="px-5 py-3.5 font-medium text-gray-800">{m.descricao}</td>
+                    <td className="px-5 py-3.5 font-medium text-gray-800">
+                      <span className="flex items-center gap-2">
+                        {m.descricao}
+                        {m.totalParcelas && m.parcelaAtual && (
+                          <span className="text-[10px] font-semibold text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                            {m.parcelaAtual}/{m.totalParcelas}x
+                          </span>
+                        )}
+                      </span>
+                    </td>
                     <td className="px-4 py-3.5">
                       <span className="flex items-center gap-1.5 text-gray-600 text-xs">
                         <span

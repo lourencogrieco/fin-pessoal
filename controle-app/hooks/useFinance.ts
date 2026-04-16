@@ -23,13 +23,24 @@ export function useFinance() {
   }, [state, hydrated])
 
   const adicionarMovimentacao = useCallback(
-    (dados: Omit<Movimentacao, 'id'>) => {
+    (dados: Omit<Movimentacao, 'id'>, parcelas = 1) => {
+      const grupoId = parcelas > 1 ? gerarId() : undefined
+      const novas: Movimentacao[] = Array.from({ length: parcelas }, (_, i) => {
+        const base = new Date(dados.data + 'T12:00:00')
+        base.setMonth(base.getMonth() + i)
+        return {
+          ...dados,
+          id: gerarId(),
+          valor: parcelas > 1 ? Math.round((dados.valor / parcelas) * 100) / 100 : dados.valor,
+          data: base.toISOString().split('T')[0],
+          parcelaGrupoId: grupoId,
+          parcelaAtual: parcelas > 1 ? i + 1 : undefined,
+          totalParcelas: parcelas > 1 ? parcelas : undefined,
+        }
+      })
       setState(prev => ({
         ...prev,
-        movimentacoes: [
-          ...prev.movimentacoes,
-          { ...dados, id: gerarId() },
-        ],
+        movimentacoes: [...prev.movimentacoes, ...novas],
       }))
     },
     []
