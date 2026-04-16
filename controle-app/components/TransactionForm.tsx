@@ -124,8 +124,9 @@ export function TransactionForm({ scope, membros, onSubmit }: Props) {
             className={`border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none transition-colors bg-white ${accent}`}
             value={form.membroId}
             onChange={e => set('membroId', e.target.value)}
+            required={scope === 'familia'}
           >
-            <option value="">Membro (opcional)</option>
+            <option value="">{scope === 'familia' ? 'Quem pagou *' : 'Membro (opcional)'}</option>
             {membros.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
           </select>
         )}

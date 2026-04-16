@@ -10,6 +10,7 @@ import { TransactionList } from '@/components/TransactionList'
 import { Charts } from '@/components/Charts'
 import { FamilyMembers } from '@/components/FamilyMembers'
 import { BillSplitter } from '@/components/BillSplitter'
+import { FamilySettlement } from '@/components/FamilySettlement'
 import { LayoutDashboard, List, BarChart2, Users, User } from 'lucide-react'
 import { TipoScope } from '@/lib/types'
 
@@ -151,6 +152,11 @@ export default function Home() {
         {subTab === 'dashboard' && (
           <>
             <SummaryCards movimentacoes={movimentacoes} scope={scope} />
+            {scope === 'familia' && membros.length > 0 && (
+              <div className="mb-5">
+                <FamilySettlement movimentacoes={movimentacoes} membros={membros} />
+              </div>
+            )}
             <TransactionForm scope={scope} membros={scope === 'familia' ? membros : []} onSubmit={adicionarMovimentacao} />
             <TransactionList movimentacoes={movimentacoes} membros={membros} onRemover={removerMovimentacao} />
           </>
