@@ -12,6 +12,8 @@ export type CategoriaDespesa =
   | 'Combustível'
   | 'Saúde'
   | 'Farmácia'
+  | 'Faxina'
+  | 'Pet'
   | 'Educação'
   | 'Lazer'
   | 'Streaming'

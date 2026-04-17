@@ -46,6 +46,7 @@ export default function Home() {
     filtros,
     setFiltros,
     adicionarMovimentacao,
+    editarMovimentacao,
     removerMovimentacao,
     adicionarMembro,
     removerMembro,
@@ -56,6 +57,7 @@ export default function Home() {
   const [scope, setScope] = useState<TipoScope>('pessoal')
   const [subTab, setSubTab] = useState<SubTab>('dashboard')
   const [darkMode, setDarkMode] = useState(false)
+  const [movimentacaoEmEdicao, setMovimentacaoEmEdicao] = useState<null | import('@/lib/types').Movimentacao>(null)
 
   const toggleDark = () => {
     setDarkMode(d => {
@@ -72,6 +74,17 @@ export default function Home() {
   const handleScopeChange = (s: TipoScope) => {
     setScope(s)
     setSubTab('dashboard')
+    setMovimentacaoEmEdicao(null)
+  }
+
+  const handleSubmitMovimentacao = async (dados: Omit<import('@/lib/types').Movimentacao, 'id'>, parcelas: number) => {
+    if (movimentacaoEmEdicao) {
+      await editarMovimentacao(movimentacaoEmEdicao.id, dados)
+      setMovimentacaoEmEdicao(null)
+      return
+    }
+
+    await adicionarMovimentacao(dados, parcelas)
   }
 
   if (!hydrated) {
@@ -200,8 +213,19 @@ export default function Home() {
                   <FamilySettlement movimentacoes={movimentacoes} membros={membros} />
                 </div>
               )}
-              <TransactionForm scope={scope} membros={scope === 'familia' ? membros : []} onSubmit={adicionarMovimentacao} />
-              <TransactionList movimentacoes={movimentacoes} membros={membros} onRemover={removerMovimentacao} />
+              <TransactionForm
+                scope={scope}
+                membros={scope === 'familia' ? membros : []}
+                onSubmit={handleSubmitMovimentacao}
+                initialData={movimentacaoEmEdicao}
+                onCancelEdit={() => setMovimentacaoEmEdicao(null)}
+              />
+              <TransactionList
+                movimentacoes={movimentacoes}
+                membros={membros}
+                onRemover={removerMovimentacao}
+                onEditar={setMovimentacaoEmEdicao}
+              />
             </>
           )
         )}
@@ -213,8 +237,19 @@ export default function Home() {
             </div>
           ) : (
             <>
-              <TransactionForm scope={scope} membros={scope === 'familia' ? membros : []} onSubmit={adicionarMovimentacao} />
-              <TransactionList movimentacoes={movimentacoes} membros={membros} onRemover={removerMovimentacao} />
+              <TransactionForm
+                scope={scope}
+                membros={scope === 'familia' ? membros : []}
+                onSubmit={handleSubmitMovimentacao}
+                initialData={movimentacaoEmEdicao}
+                onCancelEdit={() => setMovimentacaoEmEdicao(null)}
+              />
+              <TransactionList
+                movimentacoes={movimentacoes}
+                membros={membros}
+                onRemover={removerMovimentacao}
+                onEditar={setMovimentacaoEmEdicao}
+              />
             </>
           )
         )}

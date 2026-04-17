@@ -61,6 +61,26 @@ export function useFinance() {
     setMovimentacoes(prev => prev.filter(m => m.id !== id))
   }, [])
 
+  const editarMovimentacao = useCallback(async (id: string, dados: Omit<Movimentacao, 'id'>) => {
+    await fetch(`/api/movimentacoes/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(dados),
+      headers: { 'Content-Type': 'application/json' },
+    })
+
+    setMovimentacoes(prev => prev.map(m => (
+      m.id === id
+        ? {
+            ...m,
+            ...dados,
+            parcelaGrupoId: m.parcelaGrupoId,
+            parcelaAtual: m.parcelaAtual,
+            totalParcelas: m.totalParcelas,
+          }
+        : m
+    )))
+  }, [])
+
   const adicionarMembro = useCallback(async (nome: string, cor: string) => {
     const membro: MembroFamiliar = { id: gerarId(), nome, cor }
     await fetch('/api/membros', { method: 'POST', body: JSON.stringify(membro), headers: { 'Content-Type': 'application/json' } })
@@ -86,6 +106,7 @@ export function useFinance() {
     filtros,
     setFiltros,
     adicionarMovimentacao,
+    editarMovimentacao,
     removerMovimentacao,
     adicionarMembro,
     removerMembro,

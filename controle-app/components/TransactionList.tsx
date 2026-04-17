@@ -3,25 +3,27 @@
 import { useState, useMemo } from 'react'
 import { Movimentacao, MembroFamiliar } from '@/lib/types'
 import { formatarMoeda, formatarData } from '@/lib/utils'
-import { Trash2, Receipt, Filter, X } from 'lucide-react'
+import { Trash2, Receipt, Filter, X, Pencil } from 'lucide-react'
 
 const CATEGORIA_CORES: Record<string, string> = {
   Alimentação: '#f97316', Moradia: '#6366f1', Transporte: '#0ea5e9',
   Lazer: '#a855f7', Streaming: '#ec4899', Saúde: '#10b981',
   Salário: '#16a34a', Educação: '#f59e0b', Vestuário: '#8b5cf6',
   Água: '#06b6d4', Luz: '#eab308', Internet: '#3b82f6', Celular: '#8b5cf6',
-  Combustível: '#ef4444', Farmácia: '#14b8a6', Recebíveis: '#22c55e', Outros: '#9ca3af',
+  Combustível: '#ef4444', Farmácia: '#14b8a6', Faxina: '#f97316', Pet: '#84cc16',
+  Recebíveis: '#22c55e', Outros: '#9ca3af',
 }
 
 interface Props {
   movimentacoes: Movimentacao[]
   membros: MembroFamiliar[]
   onRemover: (id: string) => void
+  onEditar: (movimentacao: Movimentacao) => void
 }
 
 type Ordem = 'data_desc' | 'data_asc' | 'valor_desc' | 'valor_asc'
 
-export function TransactionList({ movimentacoes, membros, onRemover }: Props) {
+export function TransactionList({ movimentacoes, membros, onRemover, onEditar }: Props) {
   const [filtroTipo, setFiltroTipo] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState('')
   const [filtroMembro, setFiltroMembro] = useState('')
@@ -127,7 +129,7 @@ export function TransactionList({ movimentacoes, membros, onRemover }: Props) {
                   <th className="px-4 py-3 text-right">Valor</th>
                   <th className="px-4 py-3 text-left">Data</th>
                   <th className="px-4 py-3 text-left">Membro</th>
-                  <th className="px-4 py-3 w-10" />
+                  <th className="px-4 py-3 w-24" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
@@ -170,9 +172,14 @@ export function TransactionList({ movimentacoes, membros, onRemover }: Props) {
                         ) : null}
                       </td>
                       <td className="px-4 py-3.5">
-                        <button onClick={() => onRemover(m.id)} className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => onEditar(m)} className="p-1.5 text-gray-300 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={() => onRemover(m.id)} className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )
@@ -212,6 +219,9 @@ export function TransactionList({ movimentacoes, membros, onRemover }: Props) {
                     <p className={`text-sm font-bold tabular-nums ${m.tipo === 'receita' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                       {m.tipo === 'despesa' ? '−' : '+'}{formatarMoeda(m.valor)}
                     </p>
+                    <button onClick={() => onEditar(m)} className="p-1.5 text-gray-300 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
                     <button onClick={() => onRemover(m.id)} className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Movimentacao, MembroFamiliar, CategoriaDespesa, CategoriaReceita, FormaPagamento, TipoMovimentacao, TipoScope } from '@/lib/types'
-import { Plus } from 'lucide-react'
+import { Pencil, Plus, X } from 'lucide-react'
 
 const CATEGORIAS_DESPESA: CategoriaDespesa[] = [
   'Alimentação', 'Moradia', 'Água', 'Luz', 'Internet', 'Celular',
-  'Transporte', 'Combustível', 'Saúde', 'Farmácia', 'Educação',
+  'Transporte', 'Combustível', 'Saúde', 'Farmácia', 'Faxina', 'Pet', 'Educação',
   'Lazer', 'Streaming', 'Vestuário', 'Outros',
 ]
 
@@ -18,6 +18,8 @@ interface Props {
   scope: TipoScope
   membros: MembroFamiliar[]
   onSubmit: (dados: Omit<Movimentacao, 'id'>, parcelas: number) => void
+  initialData?: Movimentacao | null
+  onCancelEdit?: () => void
 }
 
 const hoje = new Date().toISOString().split('T')[0]
@@ -33,7 +35,7 @@ function parsearValor(formatted: string): number {
   return parseFloat(formatted.replace(/\./g, '').replace(',', '.')) || 0
 }
 
-export function TransactionForm({ scope, membros, onSubmit }: Props) {
+export function TransactionForm({ scope, membros, onSubmit, initialData, onCancelEdit }: Props) {
   const [form, setForm] = useState({
     descricao: '', valorDisplay: '', tipo: '' as TipoMovimentacao | '',
     categoria: '', pagamento: '' as FormaPagamento | '',
@@ -42,18 +44,37 @@ export function TransactionForm({ scope, membros, onSubmit }: Props) {
 
   const set = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }))
 
+  useEffect(() => {
+    if (!initialData) {
+      setForm({ descricao: '', valorDisplay: '', tipo: '', categoria: '', pagamento: '', membroId: '', data: hoje, parcelas: '1' })
+      return
+    }
+
+    setForm({
+      descricao: initialData.descricao,
+      valorDisplay: initialData.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      tipo: initialData.tipo,
+      categoria: initialData.categoria,
+      pagamento: initialData.pagamento,
+      membroId: initialData.membroId ?? '',
+      data: initialData.data,
+      parcelas: String(initialData.totalParcelas ?? 1),
+    })
+  }, [initialData])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const valor = parsearValor(form.valorDisplay)
     if (!form.tipo || !form.categoria || !form.pagamento || valor <= 0) return
     const parcelas = parseInt(form.parcelas) || 1
+    const parcelasSubmit = initialData ? 1 : parcelas
     onSubmit({
       descricao: form.descricao, valor,
       tipo: form.tipo as TipoMovimentacao,
       categoria: form.categoria as CategoriaDespesa | CategoriaReceita,
       pagamento: form.pagamento, data: form.data,
       membroId: form.membroId || undefined, scope,
-    }, parcelas)
+    }, parcelasSubmit)
     setForm({ descricao: '', valorDisplay: '', tipo: '', categoria: '', pagamento: '', membroId: '', data: hoje, parcelas: '1' })
   }
 
@@ -66,10 +87,24 @@ export function TransactionForm({ scope, membros, onSubmit }: Props) {
     ? Math.round((valorNumerico / parcelasNum) * 100) / 100 : null
   const categorias = form.tipo === 'receita' ? CATEGORIAS_RECEITA : CATEGORIAS_DESPESA
   const inputCls = `border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm outline-none transition-colors bg-white dark:bg-gray-800 dark:text-gray-100 ${accent}`
+  const editando = !!initialData
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 mb-5">
-      <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Nova Movimentação</h2>
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          {editando ? 'Editar Movimentação' : 'Nova Movimentação'}
+        </h2>
+        {editando && onCancelEdit && (
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-red-500 transition-colors"
+          >
+            <X className="w-3.5 h-3.5" /> Cancelar edição
+          </button>
+        )}
+      </div>
       <form onSubmit={handleSubmit} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         <input className={`col-span-2 sm:col-span-1 ${inputCls}`} placeholder="Descrição"
           value={form.descricao} onChange={e => set('descricao', e.target.value)} required />
@@ -99,7 +134,7 @@ export function TransactionForm({ scope, membros, onSubmit }: Props) {
 
         <input type="date" className={inputCls} value={form.data} onChange={e => set('data', e.target.value)} required />
 
-        {isDespesa && (
+        {isDespesa && !editando && (
           <div className="relative">
             <select className={`w-full ${inputCls}`} value={form.parcelas} onChange={e => set('parcelas', e.target.value)}>
               <option value="1">À vista</option>
@@ -122,7 +157,8 @@ export function TransactionForm({ scope, membros, onSubmit }: Props) {
         )}
 
         <button type="submit" className={`flex items-center justify-center gap-1.5 ${btnColor} text-white font-medium rounded-xl px-4 py-2.5 text-sm transition-colors`}>
-          <Plus className="w-4 h-4" /> Adicionar
+          {editando ? <Pencil className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          {editando ? 'Salvar edição' : 'Adicionar'}
         </button>
       </form>
     </div>
