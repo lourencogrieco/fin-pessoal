@@ -7,18 +7,22 @@ import { filtrarPorPeriodo, gerarId, getMesAtual, getAnoAtual } from '@/lib/util
 export function useFinance() {
   const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>([])
   const [membros, setMembros] = useState<MembroFamiliar[]>([])
+  const [familyId, setFamilyId] = useState<string | null>(null)
   const [filtros, setFiltros] = useState<FiltrosPeriodo>({ mes: getMesAtual(), ano: getAnoAtual() })
   const [hydrated, setHydrated] = useState(false)
 
-  useEffect(() => {
+  const recarregar = useCallback(() => {
     fetch('/api/data')
       .then(r => r.json())
-      .then(({ movimentacoes: mvs, membros: mbs }) => {
+      .then(({ movimentacoes: mvs, membros: mbs, familyId: fid }) => {
         setMovimentacoes(mvs.map((m: Movimentacao & { valor: string }) => ({ ...m, valor: Number(m.valor) })))
         setMembros(mbs)
+        setFamilyId(fid ?? null)
         setHydrated(true)
       })
   }, [])
+
+  useEffect(() => { recarregar() }, [recarregar])
 
   const adicionarMovimentacao = useCallback(async (dados: Omit<Movimentacao, 'id'>, parcelas = 1) => {
     const grupoId = parcelas > 1 ? gerarId() : undefined
@@ -65,12 +69,14 @@ export function useFinance() {
     movimentacoesFiltradasPessoal,
     movimentacoesFiltradasFamilia,
     membros,
+    familyId,
     filtros,
     setFiltros,
     adicionarMovimentacao,
     removerMovimentacao,
     adicionarMembro,
     removerMembro,
+    recarregar,
     hydrated,
   }
 }

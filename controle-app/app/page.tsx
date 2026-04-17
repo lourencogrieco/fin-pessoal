@@ -12,6 +12,7 @@ import { Charts } from '@/components/Charts'
 import { FamilyMembers } from '@/components/FamilyMembers'
 import { BillSplitter } from '@/components/BillSplitter'
 import { FamilySettlement } from '@/components/FamilySettlement'
+import { FamilySettings } from '@/components/FamilySettings'
 import { LayoutDashboard, List, BarChart2, Users, User, LogOut } from 'lucide-react'
 import { TipoScope } from '@/lib/types'
 
@@ -41,12 +42,14 @@ export default function Home() {
     movimentacoesFiltradasPessoal,
     movimentacoesFiltradasFamilia,
     membros,
+    familyId,
     filtros,
     setFiltros,
     adicionarMovimentacao,
     removerMovimentacao,
     adicionarMembro,
     removerMembro,
+    recarregar,
     hydrated,
   } = useFinance()
 
@@ -166,23 +169,42 @@ export default function Home() {
         </div>
 
         {subTab === 'dashboard' && (
-          <>
-            <SummaryCards movimentacoes={movimentacoes} scope={scope} />
-            {scope === 'familia' && membros.length > 0 && (
-              <div className="mb-5">
-                <FamilySettlement movimentacoes={movimentacoes} membros={membros} />
+          scope === 'familia' && !familyId ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center mb-4">
+                <Users className="w-7 h-7 text-purple-400" />
               </div>
-            )}
-            <TransactionForm scope={scope} membros={scope === 'familia' ? membros : []} onSubmit={adicionarMovimentacao} />
-            <TransactionList movimentacoes={movimentacoes} membros={membros} onRemover={removerMovimentacao} />
-          </>
+              <p className="text-gray-700 font-medium mb-1">Você ainda não tem uma família</p>
+              <p className="text-sm text-gray-400 mb-4">Crie ou entre em uma família para ver os gastos compartilhados</p>
+              <button onClick={() => setSubTab('membros')} className="bg-purple-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-purple-700 transition-colors">
+                Configurar família
+              </button>
+            </div>
+          ) : (
+            <>
+              <SummaryCards movimentacoes={movimentacoes} scope={scope} />
+              {scope === 'familia' && membros.length > 0 && (
+                <div className="mb-5">
+                  <FamilySettlement movimentacoes={movimentacoes} membros={membros} />
+                </div>
+              )}
+              <TransactionForm scope={scope} membros={scope === 'familia' ? membros : []} onSubmit={adicionarMovimentacao} />
+              <TransactionList movimentacoes={movimentacoes} membros={membros} onRemover={removerMovimentacao} />
+            </>
+          )
         )}
 
         {subTab === 'transacoes' && (
-          <>
-            <TransactionForm scope={scope} membros={scope === 'familia' ? membros : []} onSubmit={adicionarMovimentacao} />
-            <TransactionList movimentacoes={movimentacoes} membros={membros} onRemover={removerMovimentacao} />
-          </>
+          scope === 'familia' && !familyId ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <p className="text-gray-500">Configure sua família primeiro na aba <strong>Membros</strong>.</p>
+            </div>
+          ) : (
+            <>
+              <TransactionForm scope={scope} membros={scope === 'familia' ? membros : []} onSubmit={adicionarMovimentacao} />
+              <TransactionList movimentacoes={movimentacoes} membros={membros} onRemover={removerMovimentacao} />
+            </>
+          )
         )}
 
         {subTab === 'graficos' && (
@@ -194,8 +216,13 @@ export default function Home() {
 
         {subTab === 'membros' && scope === 'familia' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <FamilyMembers membros={membros} onAdicionar={adicionarMembro} onRemover={removerMembro} />
-            <BillSplitter membros={membros} />
+            <FamilySettings onFamiliaChange={recarregar} />
+            {familyId && (
+              <>
+                <FamilyMembers membros={membros} onAdicionar={adicionarMembro} onRemover={removerMembro} />
+                <BillSplitter membros={membros} />
+              </>
+            )}
           </div>
         )}
       </main>
