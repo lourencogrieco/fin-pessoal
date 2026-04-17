@@ -13,7 +13,7 @@ import { FamilyMembers } from '@/components/FamilyMembers'
 import { BillSplitter } from '@/components/BillSplitter'
 import { FamilySettlement } from '@/components/FamilySettlement'
 import { FamilySettings } from '@/components/FamilySettings'
-import { LayoutDashboard, List, BarChart2, Users, User, LogOut } from 'lucide-react'
+import { LayoutDashboard, List, BarChart2, Users, User, LogOut, Moon, Sun } from 'lucide-react'
 import { TipoScope } from '@/lib/types'
 
 const MESES = [
@@ -55,6 +55,15 @@ export default function Home() {
 
   const [scope, setScope] = useState<TipoScope>('pessoal')
   const [subTab, setSubTab] = useState<SubTab>('dashboard')
+  const [darkMode, setDarkMode] = useState(false)
+
+  const toggleDark = () => {
+    setDarkMode(d => {
+      const next = !d
+      document.documentElement.classList.toggle('dark', next)
+      return next
+    })
+  }
 
   const movimentacoes = scope === 'pessoal' ? movimentacoesFiltradasPessoal : movimentacoesFiltradasFamilia
   const periodoLabel = `${MESES[filtros.mes - 1].toLowerCase()}-${filtros.ano}`
@@ -74,20 +83,23 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 transition-colors">
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-20 shadow-sm">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-20 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow">
               <span className="text-white text-xs font-bold">CF</span>
             </div>
             <div>
-              <h1 className="text-sm font-bold text-gray-900 leading-tight">Controle Financeiro</h1>
+              <h1 className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight">Controle Financeiro</h1>
               <p className="text-[10px] text-gray-400 leading-tight">Gestão pessoal e familiar</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <button onClick={toggleDark} className="p-1.5 text-gray-400 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" title="Modo escuro">
+              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             <ExportButtons movimentacoes={movimentacoes} periodo={periodoLabel} />
             {session?.user && (
               <div className="flex items-center gap-2 pl-3 border-l border-gray-100">
@@ -106,10 +118,10 @@ export default function Home() {
       </header>
 
       {/* Scope switcher */}
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
           <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Visão</span>
-          <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-1">
             <button
               onClick={() => handleScopeChange('pessoal')}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
@@ -141,7 +153,7 @@ export default function Home() {
       </div>
 
       {/* Sub-tabs */}
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex gap-0.5">
           {subTabs.map(({ key, label, icon: Icon }) => (
             <button
@@ -152,7 +164,7 @@ export default function Home() {
                   ? scope === 'pessoal'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-purple-500 text-purple-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
             >
               <Icon className="w-4 h-4" />

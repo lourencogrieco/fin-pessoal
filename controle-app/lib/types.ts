@@ -1,17 +1,29 @@
 export type TipoMovimentacao = 'receita' | 'despesa'
 export type TipoScope = 'pessoal' | 'familia'
 
-export type Categoria =
+export type CategoriaDespesa =
   | 'Alimentação'
   | 'Moradia'
+  | 'Água'
+  | 'Luz'
+  | 'Internet'
+  | 'Celular'
   | 'Transporte'
+  | 'Combustível'
+  | 'Saúde'
+  | 'Farmácia'
+  | 'Educação'
   | 'Lazer'
   | 'Streaming'
-  | 'Saúde'
-  | 'Salário'
-  | 'Educação'
   | 'Vestuário'
   | 'Outros'
+
+export type CategoriaReceita =
+  | 'Salário'
+  | 'Recebíveis'
+  | 'Outros'
+
+export type Categoria = CategoriaDespesa | CategoriaReceita
 
 export type FormaPagamento = 'Cartão' | 'Pix' | 'Dinheiro' | 'Boleto' | 'Transferência'
 
