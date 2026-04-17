@@ -13,13 +13,19 @@ export function useFinance() {
 
   const recarregar = useCallback(() => {
     fetch('/api/data')
-      .then(r => r.json())
-      .then(({ movimentacoes: mvs, membros: mbs, familyId: fid }) => {
-        setMovimentacoes(mvs.map((m: Movimentacao & { valor: string }) => ({ ...m, valor: Number(m.valor) })))
-        setMembros(mbs)
+      .then(r => {
+        if (r.status === 401) { window.location.href = '/login'; return null }
+        return r.json()
+      })
+      .then(data => {
+        if (!data) return
+        const { movimentacoes: mvs, membros: mbs, familyId: fid } = data
+        setMovimentacoes((mvs ?? []).map((m: Movimentacao & { valor: string }) => ({ ...m, valor: Number(m.valor) })))
+        setMembros(mbs ?? [])
         setFamilyId(fid ?? null)
         setHydrated(true)
       })
+      .catch(() => setHydrated(true))
   }, [])
 
   useEffect(() => { recarregar() }, [recarregar])

@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { sql } from '@/lib/db'
 import { getUserFamily } from '@/lib/familia'
 import { gerarId } from '@/lib/utils'
 
-export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+export const POST = auth(async function POST(req) {
+  const userId = req.auth?.user?.id
+  if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const existing = await getUserFamily(session.user.id)
+  const existing = await getUserFamily(userId)
   if (existing) return NextResponse.json({ error: 'Você já pertence a uma família' }, { status: 409 })
 
   const { code } = await req.json()
@@ -18,8 +18,8 @@ export async function POST(req: NextRequest) {
   if (rows.length === 0) return NextResponse.json({ error: 'Código inválido' }, { status: 404 })
 
   const family = rows[0] as { id: string; name: string }
-  await sql`INSERT INTO family_members (id, family_id, user_id, role) VALUES (${gerarId()}, ${family.id}, ${session.user.id}, 'member')`
+  await sql`INSERT INTO family_members (id, family_id, user_id, role) VALUES (${gerarId()}, ${family.id}, ${userId}, 'member')`
 
-  const familia = await getUserFamily(session.user.id)
+  const familia = await getUserFamily(userId)
   return NextResponse.json({ familia })
-}
+})
