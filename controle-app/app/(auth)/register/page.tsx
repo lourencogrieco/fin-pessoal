@@ -18,20 +18,29 @@ export default function RegisterPage() {
     if (form.password.length < 6) return setErro('Senha deve ter pelo menos 6 caracteres')
 
     setLoading(true)
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: form.name, email: form.email, password: form.password }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      setLoading(false)
-      return setErro(data.error ?? 'Erro ao criar conta')
-    }
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: form.name, email: form.email, password: form.password }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setLoading(false)
+        return setErro(data.error ?? 'Erro ao criar conta')
+      }
 
-    await signIn('credentials', { email: form.email, password: form.password, redirect: false })
-    router.push('/')
-    router.refresh()
+      const result = await signIn('credentials', { email: form.email, password: form.password, redirect: false })
+      if (result?.error) {
+        setLoading(false)
+        return setErro('Conta criada! Faça login manualmente.')
+      }
+      router.push('/')
+      router.refresh()
+    } catch (err) {
+      setLoading(false)
+      setErro('Erro de conexão. Tente novamente.')
+    }
   }
 
   return (
