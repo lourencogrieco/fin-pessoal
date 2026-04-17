@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSession, signOut } from 'next-auth/react'
 import { useFinance } from '@/hooks/useFinance'
 import { SummaryCards } from '@/components/SummaryCards'
 import { PeriodFilter } from '@/components/PeriodFilter'
@@ -11,7 +12,7 @@ import { Charts } from '@/components/Charts'
 import { FamilyMembers } from '@/components/FamilyMembers'
 import { BillSplitter } from '@/components/BillSplitter'
 import { FamilySettlement } from '@/components/FamilySettlement'
-import { LayoutDashboard, List, BarChart2, Users, User } from 'lucide-react'
+import { LayoutDashboard, List, BarChart2, Users, User, LogOut } from 'lucide-react'
 import { TipoScope } from '@/lib/types'
 
 const MESES = [
@@ -35,6 +36,7 @@ const SUBTABS_FAMILIA: { key: SubTab; label: string; icon: React.ElementType }[]
 ]
 
 export default function Home() {
+  const { data: session } = useSession()
   const {
     movimentacoesFiltradasPessoal,
     movimentacoesFiltradasFamilia,
@@ -82,7 +84,21 @@ export default function Home() {
               <p className="text-[10px] text-gray-400 leading-tight">Gestão pessoal e familiar</p>
             </div>
           </div>
-          <ExportButtons movimentacoes={movimentacoes} periodo={periodoLabel} />
+          <div className="flex items-center gap-3">
+            <ExportButtons movimentacoes={movimentacoes} periodo={periodoLabel} />
+            {session?.user && (
+              <div className="flex items-center gap-2 pl-3 border-l border-gray-100">
+                <span className="text-xs text-gray-500 hidden sm:block">{session.user.name}</span>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Sair"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
