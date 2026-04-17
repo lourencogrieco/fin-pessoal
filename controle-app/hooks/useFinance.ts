@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { signOut } from 'next-auth/react'
 import { Movimentacao, MembroFamiliar, FiltrosPeriodo } from '@/lib/types'
 import { filtrarPorPeriodo, gerarId, getMesAtual, getAnoAtual } from '@/lib/utils'
 
@@ -11,10 +12,16 @@ export function useFinance() {
   const [filtros, setFiltros] = useState<FiltrosPeriodo>({ mes: getMesAtual(), ano: getAnoAtual() })
   const [hydrated, setHydrated] = useState(false)
 
+  const signingOut = useRef(false)
+
   const recarregar = useCallback(() => {
     fetch('/api/data')
       .then(r => {
-        if (r.status === 401) { window.location.href = '/login'; return null }
+        if (r.status === 401 && !signingOut.current) {
+          signingOut.current = true
+          signOut({ callbackUrl: '/login' })
+          return null
+        }
         return r.json()
       })
       .then(data => {

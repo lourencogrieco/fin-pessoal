@@ -16,6 +16,13 @@ export default auth((req) => {
   if (isLoggedIn && isAuthPage) {
     return NextResponse.redirect(new URL('/', req.url))
   }
+
+  // Passa o userId para as route handlers via request header
+  if (isLoggedIn && req.auth?.user?.id) {
+    const requestHeaders = new Headers(req.headers)
+    requestHeaders.set('x-user-id', req.auth.user.id)
+    return NextResponse.next({ request: { headers: requestHeaders } })
+  }
 })
 
 export const config = {

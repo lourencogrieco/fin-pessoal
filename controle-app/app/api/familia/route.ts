@@ -1,11 +1,10 @@
-import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getUserFamily, gerarInviteCode } from '@/lib/familia'
 import { gerarId } from '@/lib/utils'
 
-export const GET = auth(async function GET(req) {
-  const userId = req.auth?.user?.id
+export async function GET(req: NextRequest) {
+  const userId = req.headers.get('x-user-id')
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const familia = await getUserFamily(userId)
@@ -17,10 +16,10 @@ export const GET = auth(async function GET(req) {
     WHERE fm.family_id = ${familia.id} ORDER BY fm.joined_at
   `
   return NextResponse.json({ familia: { ...familia, membros } })
-})
+}
 
-export const POST = auth(async function POST(req) {
-  const userId = req.auth?.user?.id
+export async function POST(req: NextRequest) {
+  const userId = req.headers.get('x-user-id')
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const existing = await getUserFamily(userId)
@@ -36,10 +35,10 @@ export const POST = auth(async function POST(req) {
 
   const familia = await getUserFamily(userId)
   return NextResponse.json({ familia })
-})
+}
 
-export const DELETE = auth(async function DELETE(req) {
-  const userId = req.auth?.user?.id
+export async function DELETE(req: NextRequest) {
+  const userId = req.headers.get('x-user-id')
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const familia = await getUserFamily(userId)
@@ -50,4 +49,4 @@ export const DELETE = auth(async function DELETE(req) {
   if (remaining.length === 0) await sql`DELETE FROM families WHERE id = ${familia.id}`
 
   return NextResponse.json({ ok: true })
-})
+}

@@ -1,10 +1,9 @@
-import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getUserFamily } from '@/lib/familia'
 
-export const GET = auth(async function GET(req) {
-  const userId = req.auth?.user?.id
+export async function GET(req: NextRequest) {
+  const userId = req.headers.get('x-user-id')
   if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const familia = await getUserFamily(userId)
@@ -28,4 +27,4 @@ export const GET = auth(async function GET(req) {
   ])
 
   return NextResponse.json({ movimentacoes, membros, familyId })
-})
+}
