@@ -5,9 +5,10 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth
   const { pathname } = req.nextUrl
   const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password'].some(p => pathname.startsWith(p))
-  const isProtectedApi = pathname.startsWith('/api/') && !pathname.startsWith('/api/auth')
+  const isAuthApi = pathname.startsWith('/api/auth')
+  const isProtectedApi = pathname.startsWith('/api/') && !isAuthApi
 
-  if (!isLoggedIn && !isAuthPage) {
+  if (!isLoggedIn && !isAuthPage && !isAuthApi) {
     if (isProtectedApi) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     return NextResponse.redirect(new URL('/login', req.url))
   }
