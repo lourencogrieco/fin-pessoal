@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getUserFamily } from '@/lib/familia'
+import { getUserIdFromRequest, unauthorized } from '@/lib/auth-helper'
 
 export async function GET(req: NextRequest) {
-  const userId = req.headers.get('x-user-id')
-  if (!userId) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+  const userId = await getUserIdFromRequest(req)
+  if (!userId) return unauthorized()
 
   const familia = await getUserFamily(userId)
   const familyId = familia?.id ?? null

@@ -17,10 +17,13 @@ export default auth((req) => {
     return NextResponse.redirect(new URL('/', req.url))
   }
 
-  // Passa o userId para as route handlers via request header
-  if (isLoggedIn && req.auth?.user?.id) {
+  const userId = (req.auth?.user as { id?: string })?.id
+  const userEmail = req.auth?.user?.email
+
+  if (isLoggedIn && (userId || userEmail)) {
     const requestHeaders = new Headers(req.headers)
-    requestHeaders.set('x-user-id', req.auth.user.id)
+    if (userId) requestHeaders.set('x-user-id', userId)
+    if (userEmail) requestHeaders.set('x-user-email', userEmail)
     return NextResponse.next({ request: { headers: requestHeaders } })
   }
 })
